@@ -1,6 +1,6 @@
 {
   "name": "ol-react-example",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Basic ol5 + react example",
   "main": "index.js",
   "scripts": {
@@ -21,15 +21,10 @@
   },
   "homepage": "https://github.com/pka/ol3-react-example#readme",
   "dependencies": {
-    "openlayers": "^3.3.0",
+    "ol": "^5.3.0",
     "react": "^0.13.3",
     "react-redux": "^0.5.0",
-    "redux": "^1.0.0-rc"
+    "redux": "^1.0.1"
   },
-  "devDependencies": {
-    "react-hot-loader": "^1.2.7",
-    "jsx-loader": "^0.13.2",
-    "style-loader": "^0.12.0",
-    "css-loader": "^0.16.0"
-  }
+  "devDependencies": {}
 }

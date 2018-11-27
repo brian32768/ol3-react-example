@@ -1,48 +1,64 @@
-import ol from "openlayers";
-import React from 'react';
-//import {Route} from 'react-router-dom';
+import {Map, View, Overlay, Feature} from 'ol';
+import {OSM, Vector as VectorSource} from 'ol/source';
+import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer';
+import {Point} from 'ol/geom';
+import {getTransform} from 'ol/proj';
 
-//var Redux = require('redux');
-//var ReactRedux = require('react-redux');
+import React from 'react';
 
 import {createStore} from 'redux';
 import {Provider, connect} from 'react-redux';
 
-import "openlayers/css/ol.css";
+import "ol/ol.css";
 import "./popup.css";
 
-// Well this is certainly one way to get an asset
-// into the app with parcel.
-// The asset is actually loaded at compile time so it becomes part of the bundle.
-// Since this file has a json extension, the 'require' function
+// This is certainly one way to get an asset into the app with Parcel.
+// Since this file has a 'json' extension, the 'require' function
 // will parse it and return a JavaScript object.
+// The asset is actually loaded at compile time so it becomes part of the bundle,
+// so compiled in as a JSON object. The problem for Openlayers is that
+// it can't directly read the JSON so I have iterate over it and add points
+// one at a time!
 let json = require('/OSGEoLabs.json');
+//console.log(JSON.stringify(json, null, 3))
 
-// OL map
-let placeLayer = new ol.layer.Vector({
-  source: new ol.source.Vector({
-    format: new ol.format.GeoJSON(),
-    //url: "http://www.geoforall.org/locations/OSGEoLabs.json" raises
-    //Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://www.geoforall.org/locations/OSGEoLabs.json. (Reason: CORS header 'Access-Control-Allow-Origin' missing).
-    url: "/OSGEoLabs.json"
-  })
-});
-
-let map = new ol.Map({
+let map = new Map({
   target: 'map',
   layers: [
-    new ol.layer.Tile({
-      source: new ol.source.OSM()
-    }),
-    placeLayer
+    new TileLayer({
+      source: new OSM()
+    })
   ],
-  view: new ol.View({
+  view: new View({
     center: [949282, 6002552],
     zoom: 4
   })
 });
+
+// Get a function to transform lat,lon points into map space.
+let dest_sref = map.getView().getProjection();
+let transform = getTransform("EPSG:4326", dest_sref);
+
+// Load all the GEOJSON points into a source
+let placeSource = new VectorSource();
+json.features.forEach( function( item ) {
+    let coordinates = transform(item.geometry.coordinates);
+    let point = new Point(coordinates);
+    //console.log(point);
+    let feature = new Feature({
+        geometry: point,
+        name: item.properties.name
+    });
+    placeSource.addFeature(feature);
+});
+// Add the source to a layer, and add the layer to the map.
+let placeLayer = new VectorLayer({
+    source: placeSource
+});
+map.addLayer(placeLayer);
+
 let popupElement = document.getElementById('popup');
-let popup = new ol.Overlay({
+let popup = new Overlay({
   element: popupElement,
   autoPan: true,
   autoPanAnimation: {
@@ -74,7 +90,7 @@ function updateSelection(name) {
     return name == placeName(feature.getProperties());
   });
   if (selected.length > 0) {
-    feature = selected[0];
+    let feature = selected[0];
     popupElement.innerHTML = feature.getProperties().name;
     popup.setPosition(feature.getGeometry().getFirstCoordinate());
   }
