@@ -12,7 +12,7 @@ import {Provider, connect} from 'react-redux';
 import "ol/ol.css";
 import "./popup.css";
 
-// This is certainly one way to get an asset into the app with Parcel.
+// This is one way to get an asset into the app with Parcel.
 // Since this file has a 'json' extension, the 'require' function
 // will parse it and return a JavaScript object.
 // The asset is actually loaded at compile time so it becomes part of the bundle,
@@ -35,22 +35,21 @@ let map = new Map({
   })
 });
 
-// Get a function to transform lat,lon points into map space.
-let dest_sref = map.getView().getProjection();
-let transform = getTransform("EPSG:4326", dest_sref);
+// Get a function to transform lat,lon points into the map coord space.
+let transform = getTransform("EPSG:4326", map.getView().getProjection());
 
 // Load all the GEOJSON points into a source
 let placeSource = new VectorSource();
 json.features.forEach( function( item ) {
     let coordinates = transform(item.geometry.coordinates);
     let point = new Point(coordinates);
-    //console.log(point);
     let feature = new Feature({
         geometry: point,
         name: item.properties.name
     });
     placeSource.addFeature(feature);
 });
+
 // Add the source to a layer, and add the layer to the map.
 let placeLayer = new VectorLayer({
     source: placeSource
@@ -97,22 +96,24 @@ function updateSelection(name) {
 }
 
 // React component
-var PlaceList = React.createClass( {
-  render: function() {
-    var onSelectClick = this.props.onSelectClick;
-    var selected = this.props.selected;
-    var createItem = function(place) {
-      var name = placeName(place);
-      var selClass = (name == selected) ? 'selected' : '';
-      return <li key={name} className={selClass} onClick={onSelectClick}>{name}</li>;
-    };
-    return (
-      <ul>
-        {this.props.places.map(createItem)}
-      </ul>
-    );
-  }
-});
+class PlaceList extends React.Component {
+    render() {
+        var onSelectClick = this.props.onSelectClick;
+        var selected = this.props.selected;
+
+        var createItem = function(place) {
+          var name = placeName(place);
+          var selClass = (name == selected) ? 'selected' : '';
+          return <li key={name} className={selClass} onClick={onSelectClick}>{name}</li>;
+        };
+
+        return (
+          <ul>
+            {this.props.places.map(createItem)}
+          </ul>
+        );
+    }
+}
 
 // Actions:
 function visiblePlacesAction(places) {
@@ -181,6 +182,3 @@ React.render(
   ),
   document.getElementById('root')
 );
-
-
-module.exports = PlaceList;
