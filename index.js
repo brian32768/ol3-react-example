@@ -1,27 +1,34 @@
-var ol = require('openlayers');
-var React = require('react');
-var Redux = require('redux');
-var ReactRedux = require('react-redux');
+import ol from "openlayers";
+import React from 'react';
+//import {Route} from 'react-router-dom';
 
-require("openlayers/css/ol.css");
-require("./popup.css");
+//var Redux = require('redux');
+//var ReactRedux = require('react-redux');
 
-var createStore = Redux.createStore;
-var Provider = ReactRedux.Provider;
-var connect = ReactRedux.connect;
+import {createStore} from 'redux';
+import {Provider, connect} from 'react-redux';
 
+import "openlayers/css/ol.css";
+import "./popup.css";
+
+// Well this is certainly one way to get an asset
+// into the app with parcel.
+// The asset is actually loaded at compile time so it becomes part of the bundle.
+// Since this file has a json extension, the 'require' function
+// will parse it and return a JavaScript object.
+let json = require('/OSGEoLabs.json');
 
 // OL map
-var placeLayer = new ol.layer.Vector({
+let placeLayer = new ol.layer.Vector({
   source: new ol.source.Vector({
     format: new ol.format.GeoJSON(),
     //url: "http://www.geoforall.org/locations/OSGEoLabs.json" raises
     //Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at http://www.geoforall.org/locations/OSGEoLabs.json. (Reason: CORS header 'Access-Control-Allow-Origin' missing).
-    url: "OSGEoLabs.json"
+    url: "/OSGEoLabs.json"
   })
 });
 
-map = new ol.Map({
+let map = new ol.Map({
   target: 'map',
   layers: [
     new ol.layer.Tile({
@@ -34,9 +41,8 @@ map = new ol.Map({
     zoom: 4
   })
 });
-
-popupElement = document.getElementById('popup');
-var popup = new ol.Overlay({
+let popupElement = document.getElementById('popup');
+let popup = new ol.Overlay({
   element: popupElement,
   autoPan: true,
   autoPanAnimation: {
@@ -152,7 +158,7 @@ var App = connect(
 )(PlaceList);
 
 React.render(
-  React.createElement(Provider, {store: store}, 
+  React.createElement(Provider, {store: store},
     function(){
       return (<App/>)
     }
